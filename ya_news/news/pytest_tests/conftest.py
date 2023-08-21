@@ -51,7 +51,7 @@ def bulk_create_news():
     News.objects.bulk_create(
         News(title=f'Новость {index}',
              text='Текст',
-             date=timezone.now()-datetime.timedelta(days=index)
+             date=timezone.now() - datetime.timedelta(days=index)
              )
         for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
@@ -64,7 +64,7 @@ def bulk_create_comments(news, author):
             news=news,
             author=author,
             text=f'Текст {index}',
-            created=timezone.now()-datetime.timedelta(days=index)
+            created=timezone.now() - datetime.timedelta(days=index)
         )
         comment.save()
 
