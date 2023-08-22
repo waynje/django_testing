@@ -1,9 +1,10 @@
 import datetime
+from django.conf import settings
+from django.urls import reverse
+from django.utils import timezone
 import pytest
 
-from django.conf import settings
-from django.utils import timezone
-from news.models import News, Comment
+from news.models import Comment, News
 
 
 @pytest.fixture
@@ -47,7 +48,7 @@ def comment_id(comment):
 
 
 @pytest.fixture
-def bulk_create_news():
+def many_news():
     News.objects.bulk_create(
         News(title=f'Новость {index}',
              text='Текст',
@@ -58,15 +59,19 @@ def bulk_create_news():
 
 
 @pytest.fixture
-def bulk_create_comments(news, author):
-    for index in range(11):
-        comment = Comment.objects.create(
-            news=news,
-            author=author,
-            text=f'Текст {index}',
-            created=timezone.now() - datetime.timedelta(days=index)
-        )
-        comment.save()
+def many_comments(news, author):
+    comments_data = []
+    for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1):
+        comment_data = {
+            'news': news,
+            'author': author,
+            'text': f'Текст {index}',
+            'created': timezone.now() - datetime.timedelta(days=index)
+        }
+        comments_data.append(comment_data)
+
+    Comment.objects.bulk_create([Comment(**comment_data) for comment_data in
+                                 comments_data])
 
 
 @pytest.fixture
@@ -74,3 +79,13 @@ def form_data():
     return {
         'text': 'Текст'
     }
+
+
+@pytest.fixture
+def home_url():
+    return reverse('news:home')
+
+
+@pytest.fixture
+def detail_url(news):
+    return reverse('news:detail', news.id)
