@@ -15,17 +15,15 @@ NOTES_COUNT = 20
 class TestContent(TestCase):
     @classmethod
     def setUpTestData(cls):
-        all_notes = []
         cls.author = User.objects.create(username='Тестовый автор')
         cls.auth_client = Client()
         cls.auth_client.force_login(cls.author)
-        for index in range(NOTES_COUNT):
-            notes = Note(title=f'Заметка {index}',
-                         text='Просто текст',
-                         author=cls.author,
-                         slug=f'slug{index}')
-            all_notes.append(notes)
-        Note.objects.bulk_create(all_notes)
+        Note.objects.bulk_create(
+            Note(title=f'Заметка {index}',
+                 author=cls.author,
+                 text=f'Текст {index}',
+                 slug=f'slug{index}')
+            for index in range(NOTES_COUNT))
 
     def test_notes_count(self):
         response = self.auth_client.get(LIST_URL)

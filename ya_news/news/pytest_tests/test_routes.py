@@ -40,11 +40,6 @@ def test_pages_avaliability(
         ('news:delete', pytest.lazy_fixture('comment_id')),
     ),
 )
-def test_redirect_for_anonymous_client(
-    client, name, args
-):
-    login_url = reverse('users:login')
-    url = reverse(name, args=args)
-    expected_url = f'{login_url}?next={url}'
-    response = client.get(url)
-    assertRedirects(response, expected_url)
+def test_redirect_for_anonymous_client(client, name, args):
+    assertRedirects(client.get(reverse(name, args=args)),
+                    f'{reverse("users:login")}?next={reverse(name,args=args)}')
