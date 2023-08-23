@@ -42,8 +42,10 @@ class TestNoteCreation(TestCase):
         response = self.auth_client.post(ADD_URL, data=self.form_data)
         self.assertRedirects(response, SUCCESS_URL)
         note_count = Note.objects.count()
-        self.assertLess(initial_notes_count, note_count)
-        note = Note.objects.get()
+        self.assertEqual(note_count - initial_notes_count, 1)
+        note = Note.objects.get(text=self.NOTE_TEXT,
+                                title=self.NOTE_TITLE,
+                                slug=self.NOTE_SLUG)
         self.assertEqual(note.text, self.form_data['text'])
         self.assertEqual(note.author, self.author)
         self.assertEqual(note.title, self.form_data['title'])
@@ -138,4 +140,4 @@ class TestEditAndDeleteNote(TestCase):
         self.assertEqual(self.note.text, self.NOTE_TEXT)
         self.assertEqual(self.note.title, self.NOTE_TITLE)
         self.assertEqual(self.note.slug, self.NOTE_SLUG)
-        self.assertEqual(self.note.author, initial_note)
+        self.assertEqual(self.note.author, initial_note.author)
