@@ -19,19 +19,18 @@ def test_anonymous_user_cant_create_comment(client, news_id, form_data):
     expected_url = f'{login_url}?next={url}'
     assertRedirects(response, expected_url)
     all_comments = list(Comment.objects.all())
-    assert all_initial_comments == all_comments
+    assert sorted(all_initial_comments) == sorted(all_comments)
 
 
 def test_user_can_create_comment(
         author, author_client, news, form_data):
-    initial_comments_count = Comment.objects.count()
     url = reverse('news:detail', args=[news.pk])
     response = author_client.post(url, data=form_data)
     expected_url = url + '#comments'
     assertRedirects(response, expected_url)
-    comment_created_count = Comment.objects.count() - initial_comments_count
-    assert comment_created_count == 1
-    new_comment = Comment.objects.get()
+    created_comment_count = Comment.objects.filter(author=author).count()
+    assert created_comment_count == 1
+    new_comment = Comment.objects.get(author=author)
     assert new_comment.text == form_data['text']
     assert new_comment.news == news
     assert new_comment.author == author
@@ -43,7 +42,7 @@ def test_user_cant_use_bad_words(admin_client, news_id, bad_words_data):
     response = admin_client.post(url, data=bad_words_data)
     assertFormError(response, form='form', field='text', errors=WARNING)
     all_comments = list(Comment.objects.all())
-    assert all_comments == all_initial_comments
+    assert sorted(all_comments) == sorted(all_initial_comments)
 
 
 def test_author_can_edit_comment(
@@ -62,13 +61,12 @@ def test_author_can_edit_comment(
 
 def test_author_can_delete_comment(
         author_client, news_id, comment_id, comment):
-    initial_comments = list(Comment.objects.all())
-    deleted_comment = Comment.objects.filter(pk=comment.pk)
+    initial_comments = Comment.objects.all()
     url = reverse('news:delete', args=comment_id)
     response = author_client.post(url)
     expected_url = reverse('news:detail', args=news_id) + '#comments'
     assertRedirects(response, expected_url)
-    assert deleted_comment not in initial_comments
+    assert comment not in initial_comments
 
 
 def test_other_user_cant_edit_comment(
@@ -90,6 +88,7 @@ def test_other_user_cant_delete_comment(
     initial_comments = list(Comment.objects.all())
     initial_comment_author = comment.author
     initial_comment_news = comment.news
+    initial_comment_text = comment.text
     url = reverse('news:delete', args=comment_id)
     response = admin_client.post(url)
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -97,4 +96,5 @@ def test_other_user_cant_delete_comment(
     comment.refresh_from_db()
     assert comment.news == initial_comment_news
     assert comment.author == initial_comment_author
-    assert initial_comments == comments
+    assert comment.text == initial_comment_text
+    assert sorted(initial_comments) == sorted(comments)

@@ -3,9 +3,11 @@ from http import HTTPStatus
 
 import pytest
 from pytest_django.asserts import assertRedirects
+from pytest_lazyfixture import lazy_fixture
 
 pytestmark = pytest.mark.django_db
 
+DETAIL_URL = lazy_fixture('detail_url')
 
 @pytest.mark.parametrize(
     'name, args',
@@ -29,14 +31,14 @@ def test_pages_avaliability(
         response = admin_client.get(url)
         assert response.status_code == HTTPStatus.NOT_FOUND
     else:
-        response = admin_client.get(url)
+        response = author_client.get(url)
         assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.parametrize(
     'name, args',
     (
-        ('news:edit', pytest.lazy_fixture('comment_id')),
+        ('news:edit', pytest.lazy_fixture('comment_id'),),
         ('news:delete', pytest.lazy_fixture('comment_id')),
     ),
 )

@@ -1,6 +1,7 @@
 import datetime
 import pytest
 
+from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -60,18 +61,19 @@ def many_news():
              text='Текст',
              date=timezone.now() - datetime.timedelta(days=index)
              )
-        for index in range(11)
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
 
 
 @pytest.fixture
 def many_comments(news, author):
+    now = timezone.now()
     Comment.objects.bulk_create(
         Comment(news=news,
                 author=author,
                 text=f'Текст {index}',
-                created=timezone.now() - datetime.timedelta(days=index))
-        for index in range(11)
+                created=now - datetime.timedelta(days=index))
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
 
 
@@ -84,7 +86,7 @@ def form_data():
 
 @pytest.fixture
 def detail_url(news):
-    return reverse('news:detail', args=[news.pk])
+    return reverse('news:detail', args=news.pk)
 
 
 @pytest.fixture
