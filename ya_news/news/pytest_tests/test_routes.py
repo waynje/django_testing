@@ -9,6 +9,7 @@ pytestmark = pytest.mark.django_db
 
 DETAIL_URL = lazy_fixture('detail_url')
 
+
 @pytest.mark.parametrize(
     'name, args',
     (
