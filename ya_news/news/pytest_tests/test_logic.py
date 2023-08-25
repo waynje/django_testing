@@ -12,14 +12,14 @@ pytestmark = pytest.mark.django_db
 
 
 def test_anonymous_user_cant_create_comment(client, news_id, form_data):
-    all_initial_comments = list(Comment.objects.all())
+    all_initial_comments = set(Comment.objects.all())
     url = reverse('news:detail', args=news_id)
     response = client.post(url, data=form_data)
     login_url = reverse('users:login')
     expected_url = f'{login_url}?next={url}'
     assertRedirects(response, expected_url)
-    all_comments = list(Comment.objects.all())
-    assert sorted(all_initial_comments) == sorted(all_comments)
+    all_comments = set(Comment.objects.all())
+    assert all_initial_comments == all_comments
 
 
 def test_user_can_create_comment(
@@ -33,16 +33,15 @@ def test_user_can_create_comment(
     new_comment = Comment.objects.get(author=author)
     assert new_comment.text == form_data['text']
     assert new_comment.news == news
-    assert new_comment.author == author
 
 
 def test_user_cant_use_bad_words(admin_client, news_id, bad_words_data):
-    all_initial_comments = list(Comment.objects.all())
+    all_initial_comments = set(Comment.objects.all())
     url = reverse('news:detail', args=news_id)
     response = admin_client.post(url, data=bad_words_data)
     assertFormError(response, form='form', field='text', errors=WARNING)
-    all_comments = list(Comment.objects.all())
-    assert sorted(all_comments) == sorted(all_initial_comments)
+    all_comments = set(Comment.objects.all())
+    assert all_comments == all_initial_comments
 
 
 def test_author_can_edit_comment(
@@ -66,7 +65,7 @@ def test_author_can_delete_comment(
     response = author_client.post(url)
     expected_url = reverse('news:detail', args=news_id) + '#comments'
     assertRedirects(response, expected_url)
-    assert comment not in initial_comments
+    assert (comment in initial_comments) is False
 
 
 def test_other_user_cant_edit_comment(
@@ -85,16 +84,16 @@ def test_other_user_cant_edit_comment(
 
 def test_other_user_cant_delete_comment(
         admin_client, comment_id, comment, author, news):
-    initial_comments = list(Comment.objects.all())
+    initial_comments = set(Comment.objects.all())
     initial_comment_author = comment.author
     initial_comment_news = comment.news
     initial_comment_text = comment.text
     url = reverse('news:delete', args=comment_id)
     response = admin_client.post(url)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    comments = list(Comment.objects.all())
+    comments = set(Comment.objects.all())
     comment.refresh_from_db()
     assert comment.news == initial_comment_news
     assert comment.author == initial_comment_author
     assert comment.text == initial_comment_text
-    assert sorted(initial_comments) == sorted(comments)
+    assert initial_comments == comments

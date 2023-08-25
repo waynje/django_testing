@@ -25,11 +25,15 @@ class TestContent(TestCase):
                  text=f'Текст {index}',
                  slug=f'slug{index}')
             for index in range(10))
-        cls.notes = Note.objects.create(
+        cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст',
             slug='test_slug',
             author=cls.author,
+        )
+        cls.urls = (
+            ('notes:add', None),
+            ('notes:edit', [cls.note.slug]),
         )
 
     def test_notes_count(self):
@@ -38,18 +42,23 @@ class TestContent(TestCase):
         self.assertEqual(len(object_list), NOTES_COUNT + 1)
 
     def test_pages_contains_form(self):
-        urls = (
-            ('notes:add', None),
-            ('notes:edit', [self.notes.slug]),
-        )
-        for name, args in urls:
+        for name, args in self.urls:
             self.client.force_login(self.author)
-            note_from_db = Note.objects.get(pk=self.notes.pk)
+            note_from_db = Note.objects.get(pk=self.note.pk)
             with self.subTest(name=name):
                 url = reverse(name, args=args)
                 response = self.client.get(url)
                 self.assertIn('form', response.context)
                 self.assertIsInstance(response.context['form'], NoteForm)
-                self.assertEqual(self.notes.title, note_from_db.title)
-                self.assertEqual(self.notes.text, note_from_db.text)
-                self.assertEqual(self.notes.slug, note_from_db.slug)
+                self.assertEqual(self.note.title, note_from_db.title)
+                self.assertEqual(self.note.text, note_from_db.text)
+                self.assertEqual(self.note.slug, note_from_db.slug)
+        self.client.force_login(self.author)
+        url = reverse('notes:list')
+        response = self.client.get(url)
+        notes = response.context['object_list']
+        note_last = notes.last()
+        self.assertEqual(note_last.title, self.note.title)
+        self.assertEqual(note_last.text, self.note.text)
+        self.assertEqual(note_last.slug, self.note.slug)
+        self.assertEqual(note_last.author, self.note.author)

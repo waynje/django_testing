@@ -8,6 +8,8 @@ from django.utils import timezone
 from news.forms import BAD_WORDS
 from news.models import Comment, News
 
+CREATE_MANY_COMMENTS_COUNT = 5
+
 
 @pytest.fixture
 def author(django_user_model):
@@ -73,7 +75,7 @@ def many_comments(news, author):
                 author=author,
                 text=f'Текст {index}',
                 created=now - datetime.timedelta(days=index))
-        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
+        for index in range(CREATE_MANY_COMMENTS_COUNT)
     )
 
 
@@ -86,7 +88,7 @@ def form_data():
 
 @pytest.fixture
 def detail_url(news):
-    return reverse('news:detail', args=news.pk)
+    return reverse('news:detail', news.pk,)
 
 
 @pytest.fixture
