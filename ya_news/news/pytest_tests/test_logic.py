@@ -9,6 +9,7 @@ from news.models import Comment
 
 
 pytestmark = pytest.mark.django_db
+DETAIL_URL = pytest.lazy_fixture('detail_url')
 
 
 def test_anonymous_user_cant_create_comment(client, news_id, form_data):

@@ -1,12 +1,24 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from notes.models import Note
 
 User = get_user_model()
+
+SLUG = 'slug'
+URL_NOTES_HOME = reverse('notes:home')
+URL_NOTES_ADD = reverse('notes:add')
+URL_NOTES_EDIT = reverse('notes:edit', args=(SLUG,))
+URL_NOTES_DETAIL = reverse('notes:detail', args=(SLUG,))
+URL_NOTES_DELETE = reverse('notes:delete', args=(SLUG,))
+URL_NOTES_LIST = reverse('notes:list')
+URL_NOTES_SUCCESS = reverse('notes:success')
+URL_USERS_LOGIN = reverse('users:login')
+URL_USERS_LOGOUT = reverse('users:logout')
+URL_USERS_SINGIN = reverse('users:signup')
 
 
 class TestRoutes(TestCase):
@@ -14,73 +26,52 @@ class TestRoutes(TestCase):
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Тестовый автор')
         cls.reader = User.objects.create(username='Тестовый читатель')
+        cls.client = Client()
         cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст',
-            slug='slug',
+            slug=SLUG,
             author=cls.author)
-        cls.login_url = reverse('users:login')
-        cls.list_url = reverse('notes:list')
-
-    def test_pages_availability(self):
-        urls = (
-            ('notes:home', None),
-            ('users:login', None),
-            ('users:logout', None),
-            ('users:signup', None),
+        cls.avaliability_data = (
+            (URL_NOTES_HOME, cls.reader, HTTPStatus.OK),
+            (URL_NOTES_HOME, cls.author, HTTPStatus.OK),
+            (URL_USERS_LOGIN, cls.reader, HTTPStatus.OK),
+            (URL_USERS_LOGIN, cls.author, HTTPStatus.OK),
+            (URL_USERS_LOGOUT, cls.reader, HTTPStatus.OK),
+            (URL_USERS_LOGOUT, cls.author, HTTPStatus.OK),
+            (URL_USERS_SINGIN, cls.reader, HTTPStatus.OK),
+            (URL_USERS_SINGIN, cls.author, HTTPStatus.OK),
+            (URL_NOTES_EDIT, cls.reader, HTTPStatus.NOT_FOUND),
+            (URL_NOTES_EDIT, cls.author, HTTPStatus.OK),
+            (URL_NOTES_DETAIL, cls.reader, HTTPStatus.NOT_FOUND),
+            (URL_NOTES_DETAIL, cls.author, HTTPStatus.OK),
+            (URL_NOTES_DELETE, cls.reader, HTTPStatus.NOT_FOUND),
+            (URL_NOTES_DELETE, cls.author, HTTPStatus.OK)
         )
-        for name, args in urls:
-            with self.subTest(name=name):
-                url = reverse(name, args=args)
-                response = self.client.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_redirect_add_note_for_anonymous_client(self):
-        for name in ('notes:add',
-                     'notes:success',
-                     'notes:list'):
-            with self.subTest(name=name):
-                url = reverse(name)
-                redirect_url = f'{self.login_url}?next={url}'
-                response = self.client.get(url)
-                self.assertRedirects(response, redirect_url)
-
-    def test_list_redirect_for_anonymous_client(self):
-        with self.subTest():
-            url = reverse('notes:list')
-            redirect_url = f'{self.login_url}?next={url}'
-            response = self.client.get(url)
-            self.assertRedirects(response, redirect_url)
-
-    def test_redirect_for_anonymous_client(self):
-        for name in ('notes:edit',
-                     'notes:delete',
-                     'notes:detail',
-                     ):
-            with self.subTest(name=name):
-                url = reverse(name, args=(self.note.slug,))
-                redirect_url = f'{self.login_url}?next={url}'
-                response = self.client.get(url)
-                self.assertRedirects(response, redirect_url)
-
-    def test_avaliability(self):
-        users_statuses = (
-            (self.author, HTTPStatus.OK),
-            (self.reader, HTTPStatus.NOT_FOUND),
+        cls.redirect_data = (
+            (URL_NOTES_SUCCESS, cls.client,
+             f'{URL_USERS_LOGIN}?next={URL_NOTES_SUCCESS}'),
+            (URL_NOTES_ADD, cls.client,
+             f'{URL_USERS_LOGIN}?next={URL_NOTES_ADD}'),
+            (URL_NOTES_LIST, cls.client,
+             f'{URL_USERS_LOGIN}?next={URL_NOTES_LIST}'),
+            (URL_NOTES_DETAIL, cls.client,
+             f'{URL_USERS_LOGIN}?next={URL_NOTES_DETAIL}'),
+            (URL_NOTES_EDIT, cls.client,
+             f'{URL_USERS_LOGIN}?next={URL_NOTES_EDIT}'),
+            (URL_NOTES_DELETE, cls.client,
+             f'{URL_USERS_LOGIN}?next={URL_NOTES_DELETE}')
         )
-        for user, status in users_statuses:
+
+    def test_overall_avaliability(self):
+        for url, user, status in self.avaliability_data:
             self.client.force_login(user)
-            for name in ('notes:edit',
-                         'notes:detail',
-                         'notes:delete',
-                         ):
-                with self.subTest(user=user, name=name):
-                    url = reverse(name, args=(self.note.slug,))
-                    response = self.client.get(url)
-                    self.assertEqual(response.status_code, status)
+            with self.subTest(url=url, user=user, status=status):
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, status)
 
-    def test_list_avaliability(self):
-        self.client.force_login(self.author)
-        with self.subTest():
-            response = self.client.get(self.list_url)
-            self.assertEqual(response.status_code, HTTPStatus.OK)
+    def test_overall_redirect(self):
+        for url, user, redirect_url in self.redirect_data:
+            with self.subTest(url=url, user=user, redirect_url=redirect_url):
+                response = user.get(url)
+                self.assertRedirects(response, redirect_url)

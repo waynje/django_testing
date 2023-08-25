@@ -88,14 +88,14 @@ def form_data():
 
 @pytest.fixture
 def detail_url(news):
-    return reverse('news:detail', news.pk,)
+    return reverse('news:detail', args=(news.pk,))
 
 
 @pytest.fixture
 def delete_url(comment):
-    return reverse('news:delete', comment.pk)
+    return reverse('news:delete', args=(comment.pk,))
 
 
 @pytest.fixture
 def edit_url(comment):
-    return reverse('news:edit', comment.pk)
+    return reverse('news:edit', args=(comment.pk,))
