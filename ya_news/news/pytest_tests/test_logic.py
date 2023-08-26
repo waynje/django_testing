@@ -62,11 +62,12 @@ def test_author_can_edit_comment(
 def test_author_can_delete_comment(
         author_client, news_id, comment_id, comment):
     initial_comments = Comment.objects.all()
+    deleted_comment = Comment.objects.get(pk=comment.pk)
     url = reverse('news:delete', args=comment_id)
     response = author_client.post(url)
     expected_url = reverse('news:detail', args=news_id) + '#comments'
     assertRedirects(response, expected_url)
-    assert (comment in initial_comments) is False
+    assert deleted_comment not in initial_comments
 
 
 def test_other_user_cant_edit_comment(

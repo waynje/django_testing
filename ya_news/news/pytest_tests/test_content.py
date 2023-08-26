@@ -24,12 +24,12 @@ def test_news_order(client):
 
 
 @pytest.mark.parametrize(
-    'user, has_access', ((pytest.lazy_fixture('admin_client'), True),
-                         (pytest.lazy_fixture('client'), False))
+    'url, user, has_access', ((DETAIL_URL,
+                               pytest.lazy_fixture('admin_client'), True),
+                              (DETAIL_URL,
+                               pytest.lazy_fixture('client'), False))
 )
-def test_comment_form_availability_for_different_users(
-        news_id, user, has_access):
-    url = reverse('news:detail', args=news_id)
+def test_comment_form_availability_for_different_users(user, has_access, url):
     context = user.get(url).context
     if has_access:
         assert 'form' in context
