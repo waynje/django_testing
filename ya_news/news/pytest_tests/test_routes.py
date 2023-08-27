@@ -56,7 +56,7 @@ def test_redirect_for_anonymous_client(client, name, args):
                     f'{reverse("users:login")}?next={reverse(name,args=args)}')
 
 
-@pytest.mark.parametrize( 
+@pytest.mark.parametrize(
     'url, redirect_url',
     (
         ([(EDIT_URL)], f'{LOGIN_URL}?next={[(EDIT_URL)]}'),
