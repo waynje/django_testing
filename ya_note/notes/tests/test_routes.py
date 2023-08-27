@@ -19,6 +19,12 @@ URL_NOTES_SUCCESS = reverse('notes:success')
 URL_USERS_LOGIN = reverse('users:login')
 URL_USERS_LOGOUT = reverse('users:logout')
 URL_USERS_SINGIN = reverse('users:signup')
+URL_REDIRECT_ADD = f'{URL_USERS_LOGIN}?next={URL_NOTES_ADD}'
+URL_REDIRECT_SUCCESS = f'{URL_USERS_LOGIN}?next={URL_NOTES_SUCCESS}'
+URL_REDIRECT_LIST = f'{URL_USERS_LOGIN}?next={URL_NOTES_LIST}'
+URL_REDIRECT_DETAIL = f'{URL_USERS_LOGIN}?next={URL_NOTES_DETAIL}'
+URL_REDIRECT_EDIT = f'{URL_USERS_LOGIN}?next={URL_NOTES_EDIT}'
+URL_REDIRECT_DELETE = f'{URL_USERS_LOGIN}?next={URL_NOTES_DELETE}'
 
 
 class TestRoutes(TestCase):
@@ -59,17 +65,17 @@ class TestRoutes(TestCase):
     def test_overall_redirect(self):
         redirect_data = (
             (URL_NOTES_SUCCESS, self.client,
-             f'{URL_USERS_LOGIN}?next={URL_NOTES_SUCCESS}'),
+             URL_REDIRECT_SUCCESS),
             (URL_NOTES_ADD, self.client,
-             f'{URL_USERS_LOGIN}?next={URL_NOTES_ADD}'),
+             URL_REDIRECT_ADD),
             (URL_NOTES_LIST, self.client,
-             f'{URL_USERS_LOGIN}?next={URL_NOTES_LIST}'),
+             URL_REDIRECT_LIST),
             (URL_NOTES_DETAIL, self.client,
-             f'{URL_USERS_LOGIN}?next={URL_NOTES_DETAIL}'),
+             URL_REDIRECT_DETAIL),
             (URL_NOTES_EDIT, self.client,
-             f'{URL_USERS_LOGIN}?next={URL_NOTES_EDIT}'),
+             URL_REDIRECT_EDIT),
             (URL_NOTES_DELETE, self.client,
-             f'{URL_USERS_LOGIN}?next={URL_NOTES_DELETE}')
+             URL_REDIRECT_DELETE)
         )
         for url, user, redirect_url in redirect_data:
             with self.subTest(url=url, user=user, redirect_url=redirect_url):

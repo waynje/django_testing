@@ -31,9 +31,10 @@ def test_user_can_create_comment(
     assertRedirects(response, expected_url)
     created_comment_count = Comment.objects.filter(author=author).count()
     assert created_comment_count == 1
-    new_comment = Comment.objects.get(author=author)
-    assert new_comment.text == form_data['text']
-    assert new_comment.news == news
+    assert (Comment.objects.filter(
+        text=form_data['text'],
+        news=news,
+        author=author).exists()) is True
 
 
 def test_user_cant_use_bad_words(admin_client, news_id, bad_words_data):

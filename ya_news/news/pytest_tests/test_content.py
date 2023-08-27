@@ -8,6 +8,8 @@ pytestmark = pytest.mark.django_db
 
 HOME_URL = reverse('news:home')
 DETAIL_URL = pytest.lazy_fixture('detail_url')
+ANONYMOUS_CLIENT = pytest.lazy_fixture('client')
+REGISTERED_CLIENT = pytest.lazy_fixture('author_client')
 
 
 @pytest.mark.usefixtures('many_news')
@@ -25,14 +27,14 @@ def test_news_order(client):
 
 @pytest.mark.parametrize(
     'url, user, has_access', ((DETAIL_URL,
-                               pytest.lazy_fixture('admin_client'), True),
+                               pytest.lazy_fixture('author_client'), True),
                               (DETAIL_URL,
                                pytest.lazy_fixture('client'), False))
 )
 def test_comment_form_availability_for_different_users(user, has_access, url):
     context = user.get(url).context
-    if has_access:
-        assert 'form' in context
+    assert has_access == ('form' in context)
+    if has_access is True:
         assert isinstance(context['form'], CommentForm)
 
 
@@ -41,7 +43,6 @@ def test_comment_form_availability_for_different_users(user, has_access, url):
     'url', [(DETAIL_URL)]
 )
 def test_comments_order(client, url):
-    all_comments = list(client.get(url)
-                        .context['news'].comment_set.all())
-    assert all_comments == sorted(all_comments, key=lambda comment:
-                                  comment.created)
+    all_comments = client.get(url).context['news'].comment_set.all()
+    for i in range(len(all_comments) - 1):
+        assert all_comments[i].created < all_comments[i + 1].created

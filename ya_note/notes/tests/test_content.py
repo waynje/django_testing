@@ -46,11 +46,7 @@ class TestContent(TestCase):
                 self.assertIn('form', response.context)
                 self.assertIsInstance(response.context['form'], NoteForm)
 
-    def test_list_note(self):
+    def test_note_correct_display_on_list(self):
         response = self.auth_client.get(URL_NOTES_LIST)
-        note = Note.objects.get(pk=self.note.pk)
-        self.assertIn(note, response.context['object_list'])
-        self.assertEqual(note.title, self.note.title)
-        self.assertEqual(note.text, self.note.text)
-        self.assertEqual(note.slug, self.note.slug)
-        self.assertEqual(note.author, self.note.author)
+        object_list = response.context['object_list']
+        self.assertIn(self.note, object_list)

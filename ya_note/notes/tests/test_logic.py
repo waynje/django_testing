@@ -57,11 +57,11 @@ class TestNoteCreation(TestCase):
         created_note_count = Note.objects.filter(
             author=self.another_author).count()
         self.assertEqual(created_note_count, 1)
-        note = Note.objects.latest()
-        self.assertEqual(note.text, self.form_data['text'])
-        self.assertEqual(note.author, self.another_author)
-        self.assertEqual(note.title, self.form_data['title'])
-        self.assertEqual(note.slug, self.form_data['slug'])
+        self.assertTrue(Note.objects.filter(
+            text=self.form_data['text'],
+            author=self.another_author,
+            title=self.form_data['title'],
+            slug=self.form_data['slug']).exists())
 
     def test_not_unique_slug(self):
         initial_notes = set(Note.objects.all())
@@ -86,12 +86,11 @@ class TestNoteCreation(TestCase):
         self.assertEqual(current_notes_count - initial_notes_count, 1)
         expected_slug = slugify(self.form_data['title'])
         self.form_data_no_slug['slug'] = expected_slug
-        new_note = Note.objects.latest()
-        self.assertIsNotNone(new_note)
-        self.assertEqual(new_note.text, self.form_data_no_slug['text'])
-        self.assertEqual(new_note.title, self.form_data_no_slug['title'])
-        self.assertEqual(new_note.author, self.note.author)
-        self.assertEqual(new_note.slug, expected_slug)
+        self.assertTrue(Note.objects.filter(
+            text=self.form_data_no_slug['text'],
+            author=self.note.author,
+            title=self.form_data_no_slug['title'],
+            slug=expected_slug).exists())
 
 
 class TestEditAndDeleteNote(TestCase):
@@ -121,12 +120,12 @@ class TestEditAndDeleteNote(TestCase):
     def test_author_can_delete_note(self):
         response = self.author_client.delete(URL_NOTES_DELETE)
         self.assertRedirects(response, URL_NOTES_SUCCESS)
-        self.assertNotIn(self.note, Note.objects.all())
+        self.assertFalse(Note.objects.filter(id=self.note.id).exists())
 
     def test_reader_cant_delete_user_note(self):
         response = self.reader_client.delete(URL_NOTES_DELETE)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        self.assertIn(self.note, Note.objects.all())
+        self.assertTrue(Note.objects.filter(id=self.note.id).exists())
 
     def test_author_can_edit_note(self):
         response = self.author_client.post(URL_NOTES_EDIT, data=self.form_data)
