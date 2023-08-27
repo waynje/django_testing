@@ -46,24 +46,25 @@ class TestRoutes(TestCase):
 
     def test_overall_avaliability(self):
         avaliability_data = (
-            (URL_NOTES_HOME, self.client_reader, HTTPStatus.OK),
-            (URL_NOTES_HOME, self.client_author, HTTPStatus.OK),
-            (URL_USERS_LOGIN, self.client_reader, HTTPStatus.OK),
-            (URL_USERS_LOGIN, self.client_author, HTTPStatus.OK),
-            (URL_USERS_LOGOUT, self.client_reader, HTTPStatus.OK),
-            (URL_USERS_LOGOUT, self.client_author, HTTPStatus.OK),
-            (URL_USERS_SINGIN, self.client_reader, HTTPStatus.OK),
-            (URL_USERS_SINGIN, self.client_author, HTTPStatus.OK),
-            (URL_NOTES_EDIT, self.client_reader, HTTPStatus.NOT_FOUND),
-            (URL_NOTES_EDIT, self.client_author, HTTPStatus.OK),
-            (URL_NOTES_DETAIL, self.client_reader, HTTPStatus.NOT_FOUND),
-            (URL_NOTES_DETAIL, self.client_author, HTTPStatus.OK),
-            (URL_NOTES_DELETE, self.client_reader, HTTPStatus.NOT_FOUND),
-            (URL_NOTES_DELETE, self.client_author, HTTPStatus.OK)
+            (URL_NOTES_HOME, self.reader, HTTPStatus.OK),
+            (URL_NOTES_HOME, self.author, HTTPStatus.OK),
+            (URL_USERS_LOGIN, self.reader, HTTPStatus.OK),
+            (URL_USERS_LOGIN, self.author, HTTPStatus.OK),
+            (URL_USERS_LOGOUT, self.reader, HTTPStatus.OK),
+            (URL_USERS_LOGOUT, self.author, HTTPStatus.OK),
+            (URL_USERS_SINGIN, self.reader, HTTPStatus.OK),
+            (URL_USERS_SINGIN, self.author, HTTPStatus.OK),
+            (URL_NOTES_EDIT, self.reader, HTTPStatus.NOT_FOUND),
+            (URL_NOTES_EDIT, self.author, HTTPStatus.OK),
+            (URL_NOTES_DETAIL, self.reader, HTTPStatus.NOT_FOUND),
+            (URL_NOTES_DETAIL, self.author, HTTPStatus.OK),
+            (URL_NOTES_DELETE, self.reader, HTTPStatus.NOT_FOUND),
+            (URL_NOTES_DELETE, self.author, HTTPStatus.OK)
         )
-        for url, client, status in avaliability_data:
-            with self.subTest(url=url, client=client, status=status):
-                response = client.get(url)
+        for url, user, status in avaliability_data:
+            self.client.force_login(user)
+            with self.subTest(url=url, user=user, status=status):
+                response = self.client.get(url)
                 self.assertEqual(response.status_code, status)
 
     def test_overall_redirect(self):
