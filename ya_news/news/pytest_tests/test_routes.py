@@ -54,15 +54,3 @@ def test_overall_avaliability(
 def test_redirect_for_anonymous_client(client, name, args):
     assertRedirects(client.get(reverse(name, args=args)),
                     f'{reverse("users:login")}?next={reverse(name,args=args)}')
-
-
-@pytest.mark.parametrize(
-    'url, redirect_url',
-    (
-        ([(EDIT_URL)], f'{LOGIN_URL}?next={[(EDIT_URL)]}'),
-        ([(DELETE_URL)], f'{LOGIN_URL}?next={[(DELETE_URL)]}'),
-    ),
-)
-def test_overall_redirect_anonymous_client(client, url, redirect_url):
-    print(url)
-    assertRedirects(client.get(url), redirect_url)
