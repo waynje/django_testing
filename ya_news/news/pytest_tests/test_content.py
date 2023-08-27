@@ -37,8 +37,11 @@ def test_comment_form_availability_for_different_users(user, has_access, url):
 
 
 @pytest.mark.usefixtures('many_comments')
-def test_comments_order(client, news_id):
-    all_comments = list(client.get(reverse('news:detail', args=news_id))
+@pytest.mark.parametrize(
+    'url', [(DETAIL_URL)]
+)
+def test_comments_order(client, url):
+    all_comments = list(client.get(url)
                         .context['news'].comment_set.all())
     assert all_comments == sorted(all_comments, key=lambda comment:
                                   comment.created)
