@@ -70,13 +70,13 @@ def many_news():
 @pytest.fixture
 def many_comments(news, author):
     now = timezone.now()
-    Comment.objects.bulk_create(
-        Comment(news=news,
-                author=author,
-                text=f'Текст {index}',
-                created=now - datetime.timedelta(days=index))
-        for index in range(CREATE_MANY_COMMENTS_COUNT)
-    )
+    for index in range(CREATE_MANY_COMMENTS_COUNT):
+        Comment.objects.create(
+            news=news,
+            author=author,
+            text=f'Текст {index}',
+            created=now - datetime.timedelta(days=index)
+        )
 
 
 @pytest.fixture

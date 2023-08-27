@@ -26,7 +26,7 @@ class TestContent(TestCase):
                  author=cls.author,
                  text=f'Текст {index}',
                  slug=f'slug{index}')
-            for index in range(10))
+            for index in range(NOTES_COUNT))
         cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст',
@@ -50,3 +50,8 @@ class TestContent(TestCase):
         response = self.auth_client.get(URL_NOTES_LIST)
         object_list = response.context['object_list']
         self.assertIn(self.note, object_list)
+        note = object_list.get(pk=self.note.pk)
+        self.assertEqual(note.text, self.note.text)
+        self.assertEqual(note.title, self.note.title)
+        self.assertEqual(note.slug, self.note.slug)
+        self.assertEqual(note.author, self.note.author)

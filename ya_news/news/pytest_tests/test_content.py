@@ -34,15 +34,14 @@ def test_news_order(client):
 def test_comment_form_availability_for_different_users(user, has_access, url):
     context = user.get(url).context
     assert has_access == ('form' in context)
-    if has_access is True:
+    if has_access:
         assert isinstance(context['form'], CommentForm)
 
 
-@pytest.mark.usefixtures('many_comments')
 @pytest.mark.parametrize(
     'url', [(DETAIL_URL)]
 )
+@pytest.mark.usefixtures('many_comments')
 def test_comments_order(client, url):
     all_comments = client.get(url).context['news'].comment_set.all()
-    for i in range(len(all_comments) - 1):
-        assert all_comments[i].created < all_comments[i + 1].created
+    assert set(all_comments) == set(all_comments.order_by('created'))

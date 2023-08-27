@@ -24,17 +24,17 @@ def test_anonymous_user_cant_create_comment(client, news_id, form_data):
 
 
 def test_user_can_create_comment(
-        author, author_client, news, form_data):
+        author, author_client, news, form_data, comment):
     url = reverse('news:detail', args=[news.pk])
     response = author_client.post(url, data=form_data)
     expected_url = url + '#comments'
     assertRedirects(response, expected_url)
-    created_comment_count = Comment.objects.filter(author=author).count()
+    created_comment_count = Comment.objects.filter(pk=comment.pk).count()
     assert created_comment_count == 1
     assert (Comment.objects.filter(
         text=form_data['text'],
         news=news,
-        author=author).exists()) is True
+        pk=comment.pk).exists()) is True
 
 
 def test_user_cant_use_bad_words(admin_client, news_id, bad_words_data):
