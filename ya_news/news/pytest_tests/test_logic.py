@@ -29,12 +29,10 @@ def test_user_can_create_comment(
     response = author_client.post(url, data=form_data)
     expected_url = url + '#comments'
     assertRedirects(response, expected_url)
-    created_comment_count = Comment.objects.filter(pk=comment.pk).count()
-    assert created_comment_count == 1
     assert (Comment.objects.filter(
         text=form_data['text'],
-        news=news,
-        pk=comment.pk).exists()) is True
+        author=author,
+        news=news).exists()) is True
 
 
 def test_user_cant_use_bad_words(admin_client, news_id, bad_words_data):
@@ -62,13 +60,11 @@ def test_author_can_edit_comment(
 
 def test_author_can_delete_comment(
         author_client, news_id, comment_id, comment):
-    initial_comments = Comment.objects.all()
-    deleted_comment = Comment.objects.get(pk=comment.pk)
     url = reverse('news:delete', args=comment_id)
     response = author_client.post(url)
     expected_url = reverse('news:detail', args=news_id) + '#comments'
     assertRedirects(response, expected_url)
-    assert deleted_comment not in initial_comments
+    assert (Comment.objects.filter(pk=comment.pk).exists()) is False
 
 
 def test_other_user_cant_edit_comment(

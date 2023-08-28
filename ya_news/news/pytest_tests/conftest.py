@@ -71,12 +71,13 @@ def many_news():
 def many_comments(news, author):
     now = timezone.now()
     for index in range(CREATE_MANY_COMMENTS_COUNT):
-        Comment.objects.create(
+        comment = Comment.objects.create(
             news=news,
             author=author,
             text=f'Текст {index}',
-            created=now - datetime.timedelta(days=index)
         )
+        comment.created = now - datetime.timedelta(days=index)
+        comment.save()
 
 
 @pytest.fixture

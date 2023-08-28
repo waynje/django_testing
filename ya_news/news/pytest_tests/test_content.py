@@ -44,4 +44,4 @@ def test_comment_form_availability_for_different_users(user, has_access, url):
 @pytest.mark.usefixtures('many_comments')
 def test_comments_order(client, url):
     all_comments = client.get(url).context['news'].comment_set.all()
-    assert set(all_comments) == set(all_comments.order_by('created'))
+    assert list(all_comments) == list(all_comments.order_by('created'))
