@@ -100,3 +100,29 @@ def delete_url(comment):
 @pytest.fixture
 def edit_url(comment):
     return reverse('news:edit', args=(comment.pk,))
+
+
+@pytest.fixture
+def users_login_url():
+    return reverse('users:login')
+
+
+@pytest.fixture
+def news_detail_redirect_url(users_login_url, comment):
+    next_url = reverse('news:detail', args=(comment.pk,))
+    return f"{users_login_url}?next={next_url}"
+
+
+@pytest.fixture
+def news_comment_redirect(news):
+    return reverse('news:detail', args=(news.pk, )) + '#comments'
+
+
+@pytest.fixture
+def edit_redirect_url(users_login_url, edit_url):
+    return f'{users_login_url}?next={edit_url}'
+
+
+@pytest.fixture
+def delete_redirect_url(users_login_url, delete_url):
+    return f'{users_login_url}?next={delete_url}'

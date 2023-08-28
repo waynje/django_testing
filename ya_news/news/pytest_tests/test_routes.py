@@ -57,3 +57,16 @@ def test_overall_avaliability(
 def test_redirect_for_anonymous_client(client, name, args):
     assertRedirects(client.get(reverse(name, args=args)),
                     f'{reverse("users:login")}?next={reverse(name,args=args)}')
+
+
+@pytest.mark.parametrize(
+    'url, redirect_url',
+    (
+        (pytest.lazy_fixture('edit_url'), 
+         pytest.lazy_fixture('edit_redirect_url'),),
+        (pytest.lazy_fixture('delete_url'), 
+         pytest.lazy_fixture('delete_redirect_url'),),
+    ),
+)
+def test_redirects_for_anonymous_client(client, url, redirect_url):
+    assertRedirects(client.get(url), redirect_url)
