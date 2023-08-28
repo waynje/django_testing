@@ -50,14 +50,18 @@ class TestNoteCreation(TestCase):
         notes = set(Note.objects.all())
         self.assertEqual(notes, initial_notes)
 
-    def test_user_can_create_notes(self): 
+    def test_user_can_create_notes(self):
+        notes_before_creation = set(Note.objects.all())
         response = self.auth_another_author.post(URL_NOTES_ADD,
                                                  data=self.form_data)
         self.assertRedirects(response, URL_NOTES_SUCCESS)
-        self.assertTrue(Note.objects.filter(
-            title=self.form_data['title'],
-            text=self.form_data['text'],
-            slug=self.form_data['slug']).exists())
+        created_notes = set(Note.objects.all()) - notes_before_creation
+        self.assertTrue(len(created_notes), 1)
+        note = created_notes.pop()
+        self.assertEqual(note.title, self.form_data['title'])
+        self.assertEqual(note.text, self.form_data['text'])
+        self.assertEqual(note.slug, self.form_data['slug'])
+        self.assertEqual(note.author, self.another_author)
 
     def test_not_unique_slug(self):
         initial_notes = set(Note.objects.all())
@@ -72,19 +76,19 @@ class TestNoteCreation(TestCase):
         self.assertEqual(new_notes, initial_notes)
 
     def test_empty_slug(self):
-        del self.form_data['slug']
+        initial_notes = set(Note.objects.all())
         response = self.auth_client.post(
             URL_NOTES_ADD,
             data=self.form_data_no_slug)
         self.assertRedirects(response, URL_NOTES_SUCCESS)
-        current_notes_count = Note.objects.filter(pk=self.note.pk).count()
-        self.assertEqual(current_notes_count, 1)
+        created_notes = set(Note.objects.all()) - initial_notes
+        self.assertTrue(len(created_notes), 1)
         expected_slug = slugify(self.form_data['title'])
-        self.form_data_no_slug['slug'] = expected_slug
-        self.assertTrue(Note.objects.filter(
-            text=self.form_data_no_slug['text'],
-            title=self.form_data_no_slug['title'],
-            slug=expected_slug).exists())
+        note = created_notes.pop()
+        self.assertEqual(note.title, self.form_data_no_slug['title'])
+        self.assertEqual(note.text, self.form_data_no_slug['text'])
+        self.assertEqual(note.slug, expected_slug)
+        self.assertEqual(note.author, self.author)
 
 
 class TestEditAndDeleteNote(TestCase):

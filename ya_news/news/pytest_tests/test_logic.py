@@ -10,6 +10,7 @@ from news.models import Comment
 
 pytestmark = pytest.mark.django_db
 DETAIL_URL = pytest.lazy_fixture('detail_url')
+LOGIN_URL = reverse('users:login')
 
 
 def test_anonymous_user_cant_create_comment(client, news_id, form_data):
@@ -26,13 +27,15 @@ def test_anonymous_user_cant_create_comment(client, news_id, form_data):
 def test_user_can_create_comment(
         author, author_client, news, form_data, comment):
     url = reverse('news:detail', args=[news.pk])
+    initial_comments = set(Comment.objects.all())
     response = author_client.post(url, data=form_data)
     expected_url = url + '#comments'
     assertRedirects(response, expected_url)
-    assert (Comment.objects.filter(
-        text=form_data['text'],
-        author=author,
-        news=news).exists()) is True
+    created_comments = set(Comment.objects.all()) - initial_comments
+    comment = created_comments.pop()
+    assert comment.text == form_data['text']
+    assert comment.news == news
+    assert comment.author == author
 
 
 def test_user_cant_use_bad_words(admin_client, news_id, bad_words_data):
