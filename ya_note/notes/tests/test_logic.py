@@ -50,7 +50,7 @@ class TestNoteCreation(TestCase):
         notes = set(Note.objects.all())
         self.assertEqual(notes, initial_notes)
 
-    def test_user_can_create_notes(self):
+    def test_user_can_create_notes(self): 
         response = self.auth_another_author.post(URL_NOTES_ADD,
                                                  data=self.form_data)
         self.assertRedirects(response, URL_NOTES_SUCCESS)

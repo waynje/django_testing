@@ -64,7 +64,7 @@ def test_author_can_delete_comment(
     response = author_client.post(url)
     expected_url = reverse('news:detail', args=news_id) + '#comments'
     assertRedirects(response, expected_url)
-    assert (Comment.objects.filter(pk=comment.pk).exists()) is False
+    assert not Comment.objects.filter(pk=comment.pk).exists()
 
 
 def test_other_user_cant_edit_comment(
