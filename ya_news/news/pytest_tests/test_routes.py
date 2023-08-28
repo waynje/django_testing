@@ -42,16 +42,16 @@ DELETE_REDIRECT_URL = f'{LOGIN_URL}?next={[(DELETE_URL)]}'
 def test_overall_avaliability(
     url, user, status
 ):
-    print(url)
     response = user.get(url)
     assert response.status_code == status
+
 
 @pytest.mark.parametrize(
     'url, redirect_url',
     (
-        (pytest.lazy_fixture('edit_url'), 
+        (pytest.lazy_fixture('edit_url'),
          pytest.lazy_fixture('edit_redirect_url'),),
-        (pytest.lazy_fixture('delete_url'), 
+        (pytest.lazy_fixture('delete_url'),
          pytest.lazy_fixture('delete_redirect_url'),),
     ),
 )

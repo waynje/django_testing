@@ -74,7 +74,7 @@ def test_other_user_cant_edit_comment(
 
 
 def test_other_user_cant_delete_comment(
-        admin_client, comment_id, comment, delete_url):
+        admin_client, comment, delete_url):
     initial_comments = set(Comment.objects.all())
     initial_comment_author = comment.author
     initial_comment_news = comment.news
