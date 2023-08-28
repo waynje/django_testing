@@ -46,19 +46,6 @@ def test_overall_avaliability(
     response = user.get(url)
     assert response.status_code == status
 
-
-@pytest.mark.parametrize(
-    'name, args',
-    (
-        ('news:edit', pytest.lazy_fixture('comment_id'),),
-        ('news:delete', pytest.lazy_fixture('comment_id')),
-    ),
-)
-def test_redirect_for_anonymous_client(client, name, args):
-    assertRedirects(client.get(reverse(name, args=args)),
-                    f'{reverse("users:login")}?next={reverse(name,args=args)}')
-
-
 @pytest.mark.parametrize(
     'url, redirect_url',
     (
